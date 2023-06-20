@@ -506,6 +506,7 @@ public class DefaultLitePullConsumerImpl implements MQConsumerInner {
             });
             assignedMessageQueue.setRebalanceImpl(this.rebalanceImpl);
             if (serviceState == ServiceState.RUNNING) {
+                // 启动时主动上传一次心跳
                 this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
                 updateTopicSubscribeInfoWhenSubscriptionChanged();
             }

@@ -51,7 +51,9 @@ public class NamesrvStartup {
     private static ControllerConfig controllerConfig = null;
 
     public static void main(String[] args) {
+        // 启动控制器
         main0(args);
+        // 路由元信息
         controllerManagerMain();
     }
 
@@ -85,6 +87,9 @@ public class NamesrvStartup {
         // 设置版本号为当前版本号
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
+        // 解析命令行代码
+        // 维护了一个options list，会把这些参数解析进去（-h情况下会终止执行，返回各个参数的说明）
+        // eg：-c D:\code\opensource\rocketmq\conf\xxxx.conf
         //构造org.apache.commons.cli.Options,并添加-h -n参数，-h参数是打印帮助信息，-n参数是指定namesrvAddr
         Options options = ServerUtil.buildCommandlineOptions(new Options());
         //初始化commandLine，并在options中添加-c -p参数，-c指定nameserver的配置文件路径，-p标识打印配置信息
@@ -147,8 +152,9 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController createAndStartNamesrvController() throws Exception {
-
+        //创建NameServerController
         NamesrvController controller = createNamesrvController();
+        // 根据启动属性创建NamesrvController实例
         start(controller);
         NettyServerConfig serverConfig = controller.getNettyServerConfig();
         String tip = String.format("The Name Server boot success. serializeType=%s, address %s:%d", RemotingCommand.getSerializeTypeConfigInThisServer(), serverConfig.getBindAddress(), serverConfig.getListenPort());
@@ -171,17 +177,22 @@ public class NamesrvStartup {
             throw new IllegalArgumentException("NamesrvController is null");
         }
 
+        /**
+         * 初始化，主要做如下两件事
+         * 1. 处理netty相关：创建远程服务与工作线程
+         * 2. 开启定时任务：移除不活跃的broker
+         **/
         boolean initResult = controller.initialize();
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);
         }
-
+        // 添加一个关闭钩子
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, (Callable<Void>) () -> {
             controller.shutdown();
             return null;
         }));
-
+        // 执行
         controller.start();
 
         return controller;

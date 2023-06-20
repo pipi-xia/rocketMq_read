@@ -49,10 +49,10 @@ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 
 /**
  * This class is the entry point for applications intending to send messages. </p>
- *
+ * 包装该类中几乎所有方法的内部实现该类是打算发送消息的应用程序的入口点
  * It's fine to tune fields which exposes getter/setter methods, but keep in mind, all of them should work well out of
  * box for most scenarios. </p>
- *
+ * 调整公开getter/setter方法的字段是可以的，但请记住，所有这些方法都应该在
  * This class aggregates various <code>send</code> methods to deliver messages to broker(s). Each of them has pros and
  * cons; you'd better understand strengths and weakness of them before actually coding. </p>
  *
@@ -62,8 +62,10 @@ import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
+     * 包装该类中几乎所有方法的内部实现
      * Wrapping internal implementations for virtually all methods presented in this class.
      */
+    // 默认的生产者的实现类, 你也可以自己实现DefaultMQProducer
     protected final transient DefaultMQProducerImpl defaultMQProducerImpl;
     private final Logger logger = LoggerFactory.getLogger(DefaultMQProducer.class);
     private final Set<Integer> retryResponseCodes = new CopyOnWriteArraySet<>(Arrays.asList(
@@ -83,6 +85,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      *
      * See <a href="https://rocketmq.apache.org/docs/introduction/02concepts">core concepts</a> for more discussion.
      */
+    // 生产者的组名, 是一个必须传递的参数. 同一个生产者组中的生产者实例的行为需要一致
     private String producerGroup;
 
     /**
@@ -114,9 +117,10 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
      * Maximum number of retry to perform internally before claiming sending failure in asynchronous mode. </p>
-     *
+     *   异步发送失败的重试次数, 默认是2次, 异步发送是有条件的重试, 根据response来判断是否重试
      * This may potentially cause message duplication which is up to application developers to resolve.
-     */
+     * 异步发送失败的重试次数, 默认是2次, 异步发送是有条件的重试, 根据response来判断是否重试
+     * */
     private int retryTimesWhenSendAsyncFailed = 2;
 
     /**
@@ -293,8 +297,10 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
      *
      * @throws MQClientException if there is any unexpected error.
      */
+    // 启动整个生产者实例, 会校验生产者的配置参数是否正确, 并开启通信通道, 各种定时任务, Pull服务, Rebalance服务, 注册生产者到Broker
     @Override
     public void start() throws MQClientException {
+        // 生产者组 this.producerGroup
         this.setProducerGroup(withNamespace(this.producerGroup));
         this.defaultMQProducerImpl.start();
         if (null != traceDispatcher) {
@@ -309,6 +315,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
     /**
      * This method shuts down this producer instance and releases related resources.
      */
+    // 关闭生产者实例, 取消在broker中的注册
     @Override
     public void shutdown() {
         this.defaultMQProducerImpl.shutdown();
@@ -319,7 +326,7 @@ public class DefaultMQProducer extends ClientConfig implements MQProducer {
 
     /**
      * Fetch message queues of topic <code>topic</code>, to which we may send/publish messages.
-     *
+     *  获取一个Topic有哪些Queue, 在发送消息的时候需要调用
      * @param topic Topic to fetch.
      * @return List of message queues readily to send messages to
      * @throws MQClientException if there is any client error.

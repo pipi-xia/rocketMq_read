@@ -101,12 +101,14 @@ public class NamesrvController {
     }
 
     public boolean initialize() {
+        //加载KV配置
         loadConfig();
         initiateNetworkComponents();
         //初始化负责处理Netty网络交互数据的线程池，默认线程数是8个
         initiateThreadExecutors();
         //注册Netty服务端业务处理逻辑，如果开启了clusterTest，那么注册的请求处理类是ClusterTestRequestProcessor，否则请求处理类是DefaultRequestProcessor
         registerProcessor();
+        //开启定时任务:每隔10min打印一次KV配置
         startScheduleService();
         //rocketmq可以通过开启TLS来提高数据传输的安全性，如果开启了，那么需要注册一个监听器来重新加载SslContext
         initiateSslContext();
@@ -136,6 +138,7 @@ public class NamesrvController {
     }
 
     private void initiateNetworkComponents() {
+        //创建NettyServer网络处理对象
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
         this.remotingClient = new NettyRemotingClient(this.nettyClientConfig);
     }

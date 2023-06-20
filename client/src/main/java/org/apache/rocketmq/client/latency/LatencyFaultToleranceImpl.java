@@ -31,6 +31,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
 
     @Override
     public void updateFaultItem(final String name, final long currentLatency, final long notAvailableDuration) {
+        // 跟进broker的延迟信息
         FaultItem old = this.faultItemTable.get(name);
         if (null == old) {
             final FaultItem faultItem = new FaultItem(name);
@@ -72,6 +73,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         }
         if (!tmpList.isEmpty()) {
             Collections.sort(tmpList);
+            // FaultItem中实现了CompareTo方法, 会根据延迟时间进行排序
             final int half = tmpList.size() / 2;
             if (half <= 0) {
                 return tmpList.get(0).getName();

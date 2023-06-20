@@ -21,6 +21,7 @@ public interface ShutdownHook {
      * Code to execute before broker shutdown.
      *
      * @param controller broker to shutdown
+     *  注册关闭钩子：调用Runtime.getRuntime().addShutdownHook(...)，可以在jvm进程关闭前进行一些操作
      */
     void beforeShutdown(BrokerController controller);
 }

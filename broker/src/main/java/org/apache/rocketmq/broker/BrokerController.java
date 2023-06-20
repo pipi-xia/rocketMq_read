@@ -274,7 +274,7 @@ public class BrokerController {
         final BrokerConfig brokerConfig,
         final NettyServerConfig nettyServerConfig,
         final NettyClientConfig nettyClientConfig,
-        final MessageStoreConfig messageStoreConfig,
+        final MessageStoreConfig messageStoreConfig, //消息配置属性
         final ShutdownHook shutdownHook
     ) {
         this(brokerConfig, nettyServerConfig, nettyClientConfig, messageStoreConfig);
@@ -649,7 +649,7 @@ public class BrokerController {
                                 BrokerController.this.getSlaveSynchronize().syncAll();
                                 lastSyncTimeMs = System.currentTimeMillis();
                             }
-                            
+
                             //timer checkpoint, latency-sensitive, so sync it more frequently
                             if (messageStoreConfig.isTimerWheelEnable()) {
                                 BrokerController.this.getSlaveSynchronize().syncTimerCheckPoint();
@@ -733,6 +733,7 @@ public class BrokerController {
     }
 
     public boolean initializeMetadata() {
+        // 初始化配置，主题，消费者管理器
         boolean result = this.topicConfigManager.load();
         result = result && this.topicQueueMappingManager.load();
         result = result && this.consumerOffsetManager.load();
@@ -779,7 +780,6 @@ public class BrokerController {
     }
 
     public boolean initialize() throws CloneNotSupportedException {
-
         boolean result = this.initializeMetadata();
         if (!result) {
             return false;

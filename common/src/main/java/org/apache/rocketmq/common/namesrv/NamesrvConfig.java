@@ -17,6 +17,11 @@
 
 /**
  * $Id: NamesrvConfig.java 1839 2013-05-16 02:12:02Z vintagewang@apache.org $
+ * rocketmqHome： rocketmq主目录
+ * kvConfig： NameServer存储KV配置属性的持久化路径
+ * configStorePath： nameServer默认配置文件路径
+ * orderMessageEnable： 是否支持顺序消息
+ * NettyServerConfig属性
  */
 package org.apache.rocketmq.common.namesrv;
 

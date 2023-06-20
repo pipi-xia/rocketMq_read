@@ -22,7 +22,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 public interface TransactionListener {
     /**
      * When send transactional prepare(half) message succeed, this method will be invoked to execute local transaction.
-     *
+     *   在该方法中执行本地事务
      * @param msg Half(prepare) message
      * @param arg Custom business parameter
      * @return Transaction state
@@ -32,7 +32,7 @@ public interface TransactionListener {
     /**
      * When no response to prepare(half) message. broker will send check message to check the transaction status, and this
      * method will be invoked to get local transaction status.
-     *
+     *  当由于各种问题导致未发送Commit或者Rollback消息给Broker时, Broker回调生产者查询本地事务状态的处理方法
      * @param msg Check message
      * @return Transaction state
      */

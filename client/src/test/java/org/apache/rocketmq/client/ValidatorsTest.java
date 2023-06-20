@@ -20,9 +20,13 @@ package org.apache.rocketmq.client;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.constant.PermName;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.topic.TopicValidator;
+import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.protocol.ResponseCode;
 import org.junit.Test;
 
@@ -64,7 +68,7 @@ public class ValidatorsTest {
 
     @Test
     public void testCheckTopic_BlankTopic() {
-        String blankTopic = "";
+        String blankTopic = "Hello";
         try {
             Validators.checkTopic(blankTopic);
             failBecauseExceptionWasNotThrown(MQClientException.class);

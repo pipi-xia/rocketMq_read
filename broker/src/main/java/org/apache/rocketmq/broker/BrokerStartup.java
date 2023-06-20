@@ -47,7 +47,8 @@ public class BrokerStartup {
     public static final SystemConfigFileHelper CONFIG_FILE_HELPER = new SystemConfigFileHelper();
 
     public static void main(String[] args) {
-        start(createBrokerController(args));
+        BrokerController brokerController = createBrokerController(args);
+        start(brokerController);
     }
 
     public static BrokerController start(BrokerController controller) {
@@ -82,20 +83,25 @@ public class BrokerStartup {
     public static BrokerController buildBrokerController(String[] args) throws Exception {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
+        // 三个配置：broker、netty服务器、netty客户端
         final BrokerConfig brokerConfig = new BrokerConfig();
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         final NettyClientConfig nettyClientConfig = new NettyClientConfig();
+
+        // 创建消息配置，这个创建的时候就会通过注解注入配置信息（含commitLog路径、存储的要求、broker角色、延迟级别等）
         final MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         nettyServerConfig.setListenPort(10911);
         messageStoreConfig.setHaListenPort(0);
 
-        Options options = ServerUtil.buildCommandlineOptions(new Options());
+               Options options = ServerUtil.buildCommandlineOptions(new Options());
         CommandLine commandLine = ServerUtil.parseCmdLine(
             "mqbroker", args, buildCommandlineOptions(options), new DefaultParser());
         if (null == commandLine) {
             System.exit(-1);
         }
 
+        // 其实这里就是加载broker.conf里面的配置信息
+        // - 传参用法(Program arguments)：-c C:\software\devenv\rocketmq\broker.conf
         Properties properties = null;
         if (commandLine.hasOption('c')) {
             String file = commandLine.getOptionValue('c');
@@ -114,6 +120,7 @@ public class BrokerStartup {
             MixAll.properties2Object(properties, messageStoreConfig);
         }
 
+        // 将property里面的参数信息通过反射设置到brokerConfig里
         MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), brokerConfig);
         if (null == brokerConfig.getRocketmqHome()) {
             System.out.printf("Please set the %s variable in your environment " +
@@ -136,6 +143,11 @@ public class BrokerStartup {
             }
         }
 
+        /**
+         * BrokerRole 角色：
+         * - MASTER: 有两种同步方式。ASYNC_MASTER异步同步主节点，SYNC_MASTER同步同步主节点
+         * - SLAVE: 从节点
+        */
         if (BrokerRole.SLAVE == messageStoreConfig.getBrokerRole()) {
             int ratio = messageStoreConfig.getAccessMessageInMemoryMaxRatio() - 10;
             messageStoreConfig.setAccessMessageInMemoryMaxRatio(ratio);
@@ -207,6 +219,7 @@ public class BrokerStartup {
         final BrokerController controller = new BrokerController(
             brokerConfig, nettyServerConfig, nettyClientConfig, messageStoreConfig);
 
+        // 将所有配置合并到this.allConfigs，避免丢失
         // Remember all configs to prevent discard
         controller.getConfiguration().registerConfig(properties);
 
@@ -237,11 +250,13 @@ public class BrokerStartup {
     public static BrokerController createBrokerController(String[] args) {
         try {
             BrokerController controller = buildBrokerController(args);
+            // 初始化 就是加载配置文件中配置、创建线程池、注册请求处理器、启动定时任务等
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();
                 System.exit(-3);
             }
+            // 服务关闭钩子调用
             Runtime.getRuntime().addShutdownHook(new Thread(buildShutdownHook(controller)));
             return controller;
         } catch (Throwable e) {

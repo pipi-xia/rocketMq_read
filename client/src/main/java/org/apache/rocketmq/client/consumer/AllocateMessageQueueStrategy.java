@@ -21,6 +21,8 @@ import org.apache.rocketmq.common.message.MessageQueue;
 
 /**
  * Strategy Algorithm for message allocating between consumers
+ * // 目前一共有五种实现方法
+ * // 平均分配(默认)、环形分配、手动配置、一致性Hash分配、机房分配策略
  */
 public interface AllocateMessageQueueStrategy {
 
@@ -33,6 +35,7 @@ public interface AllocateMessageQueueStrategy {
      * @param cidAll consumer set in current consumer group
      * @return The allocate result of given strategy
      */
+    // 执行队列分配操作, 该方法必须保证所有的队列都能被分配到消费者
     List<MessageQueue> allocate(
         final String consumerGroup,
         final String currentCID,
@@ -45,5 +48,6 @@ public interface AllocateMessageQueueStrategy {
      *
      * @return The strategy name
      */
+    // 获取当前分配算法的名称
     String getName();
 }
